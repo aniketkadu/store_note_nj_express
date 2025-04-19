@@ -13,6 +13,7 @@ module.exports = {
     SUCCESS_MESSAGE: 'Request completed successfully.',
     USER_FETCHED_MESSAGE: 'User details fetched successfully.',
     USER_CREATED_MESSAGE: 'User has been successfully created.',
+    CUSTOMER_CREATED_MESSAGE: 'Customer has been successfully created.',
     USER_UPDATED_MESSAGE: 'User details have been successfully updated.',
     LOGIN_SUCCESSFULL:'login successful',
     
@@ -24,6 +25,7 @@ module.exports = {
     ERROR_UPDATING_USER: 'Error occurred while updating user details.',
     ERROR_INVALID_INPUT: 'Invalid input. Please check your request data.',
     ERROR_USER_EXIST: 'Username or email already exists',
+    ERROR_CUSTOMER_EXIST: 'An active customer with this phone number already exists. ',
     
     // Other dynamic labels (can be used for various API status messages)
     INVALID_REQUEST: 'Invalid request.',

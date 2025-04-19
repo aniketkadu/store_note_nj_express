@@ -10,7 +10,7 @@ exports.getAllUsers =  async (req, res) => {
       //res.status(200).json(results);
       if (results.length === 0) {
         // Returning a dynamic message when no user details are found
-        return sendResponse(res, messages.SUCCESS_CODE, messages.SUCCESS_STATUS, messages.USER_NOT_FOUND_MESSAGE, []);
+        return sendResponse(res, messages.ERROR_CODE, messages.ERROR_STATUS, messages.USER_NOT_FOUND_MESSAGE, []);
       }
   // Returning a success message with user details
    sendResponse(res, messages.SUCCESS_CODE, messages.SUCCESS_STATUS, messages.USER_FETCHED_MESSAGE, results); 
@@ -21,51 +21,28 @@ exports.getAllUsers =  async (req, res) => {
   }
 
   exports.CreateUser = async (req, res) => {
-    const { username, email, password, first_name, last_name, date_of_birth, profile_picture, status } = req.body;
+    const { cust_name, email, phone, status } = req.body;
 
     const checkUserQuery = `
-    SELECT * FROM users 
-    WHERE username = ? OR email = ?;
+    SELECT * FROM customers 
+    WHERE phone = ? AND staus='active';
   `;
-    const result = await executeQuery(checkUserQuery, [username, email]);
+    const result = await executeQuery(checkUserQuery, [phone]);
       // If username or email already exists
       if (result.length > 0) {
-       return sendResponse(res, messages.BAD_REQUEST, messages.ERROR_STATUS, messages.ERROR_USER_EXIST, {}); 
+       return sendResponse(res, messages.BAD_REQUEST, messages.ERROR_STATUS, messages.ERROR_CUSTOMER_EXIST, {}); 
       }
-    
-
-    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds for bcrypt
       // SQL query to insert a new user
-      const insertQuery = `
-        INSERT INTO users (
-          username, 
-          email, 
-          password_hash, 
-          first_name, 
-          last_name, 
-          date_of_birth, 
-          profile_picture, 
-          last_login, 
-          status
-        ) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?);
-      `;
+      const insertQuery = `INSERT INTO customers (name, email, phone, status) VALUES (?, ?, ?, ?);`;
   
       // Values to insert into the query
       const values = [
-        username,
-        email,
-        hashedPassword,
-        first_name,
-        last_name,
-        date_of_birth,
-        profile_picture || null, // If no profile picture is provided, set as null
-        status || 'active' // Default to 'active' if not provided
+        cust_name, email, phone, status
       ];
     
       try {
         const result = await executeQuery(insertQuery, values);
-       return sendResponse(res, messages.SUCCESS_CODE, messages.SUCCESS_STATUS, messages.USER_CREATED_MESSAGE, [{userId: result.insertId}]); 
+       return sendResponse(res, messages.SUCCESS_CODE, messages.SUCCESS_STATUS, messages.CUSTOMER_CREATED_MESSAGE, [{customerId: result.insertId}]); 
       } catch (error) {
         handleError(res, error, messages.ERROR_CREATING_USER);
       }

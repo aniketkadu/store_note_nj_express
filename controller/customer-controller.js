@@ -1,0 +1,72 @@
+const {executeQuery,handleError} =require('../services/db.service')
+const { sendResponse } = require('../services/responseUtils');
+const messages = require('../shared/constant'); 
+
+exports.getAllCustomers = async (req,res) => {
+    const sql = "Select * from customers where status = 'active'"
+    try {
+        const results = await executeQuery(sql)
+        if (results.length === 0) {
+            // Returning a dynamic message when no user details are found
+            return sendResponse(res, messages.SUCCESS_CODE, messages.SUCCESS_STATUS, messages.USER_NOT_FOUND_MESSAGE, []);
+          }
+
+     sendResponse(res, messages.SUCCESS_CODE, messages.SUCCESS_STATUS, messages.USER_FETCHED_MESSAGE, results); 
+          
+    } catch (error) {
+        return sendResponse(res, messages.ERROR_CODE, messages.ERROR_STATUS, messages.ERROR_FETCHING_MESSAGE, error.message);
+        
+    } 
+}
+
+
+    exports.CreateCustomer = async (req, res) => {
+        const { username, email, password, first_name, last_name, date_of_birth, profile_picture, status } = req.body;
+    
+        const checkUserQuery = `
+        SELECT * FROM users 
+        WHERE username = ? OR email = ?;
+      `;
+        const result = await executeQuery(checkUserQuery, [username, email]);
+          // If username or email already exists
+          if (result.length > 0) {
+           return sendResponse(res, messages.BAD_REQUEST, messages.ERROR_STATUS, messages.ERROR_USER_EXIST, {}); 
+          }
+        
+    
+        const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds for bcrypt
+          // SQL query to insert a new user
+          const insertQuery = `
+            INSERT INTO users (
+              username, 
+              email, 
+              password_hash, 
+              first_name, 
+              last_name, 
+              date_of_birth, 
+              profile_picture, 
+              last_login, 
+              status
+            ) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?);
+          `;
+      
+          // Values to insert into the query
+          const values = [
+            username,
+            email,
+            hashedPassword,
+            first_name,
+            last_name,
+            date_of_birth,
+            profile_picture || null, // If no profile picture is provided, set as null
+            status || 'active' // Default to 'active' if not provided
+          ];
+        
+          try {
+            const result = await executeQuery(insertQuery, values);
+           return sendResponse(res, messages.SUCCESS_CODE, messages.SUCCESS_STATUS, messages.USER_CREATED_MESSAGE, [{userId: result.insertId}]); 
+          } catch (error) {
+            handleError(res, error, messages.ERROR_CREATING_USER);
+          }
+        }
