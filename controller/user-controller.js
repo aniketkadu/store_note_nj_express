@@ -22,6 +22,18 @@ exports.getAllUsers =  async (req, res) => {
 
   exports.CreateUser = async (req, res) => {
     const { username, email, password, first_name, last_name, date_of_birth, profile_picture, status } = req.body;
+
+    const checkUserQuery = `
+    SELECT * FROM users 
+    WHERE username = ? OR email = ?;
+  `;
+    const result = await executeQuery(checkUserQuery, [username, email]);
+      // If username or email already exists
+      if (result.length > 0) {
+       return sendResponse(res, messages.BAD_REQUEST, messages.ERROR_STATUS, messages.ERROR_USER_EXIST, {}); 
+      }
+    
+
     const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds for bcrypt
       // SQL query to insert a new user
       const insertQuery = `
