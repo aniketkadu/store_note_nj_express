@@ -21,31 +21,57 @@ exports.getAllUsers =  async (req, res) => {
   }
 
   exports.CreateUser = async (req, res) => {
-    const { cust_name, email, phone, status } = req.body;
-
+    const { username, email, password, first_name, last_name, date_of_birth, profile_picture, status } = req.body;
+          
     const checkUserQuery = `
-    SELECT * FROM customers 
-    WHERE phone = ? AND staus='active';
+    SELECT * FROM users 
+    WHERE username = ? OR email = ?;
   `;
-    const result = await executeQuery(checkUserQuery, [phone]);
+    const result = await executeQuery(checkUserQuery, [username, email]);
       // If username or email already exists
       if (result.length > 0) {
-       return sendResponse(res, messages.BAD_REQUEST, messages.ERROR_STATUS, messages.ERROR_CUSTOMER_EXIST, {}); 
+       return sendResponse(res, messages.BAD_REQUEST, messages.ERROR_STATUS, messages.ERROR_USER_EXIST, {}); 
       }
+    
+
+    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds for bcrypt
       // SQL query to insert a new user
-      const insertQuery = `INSERT INTO customers (name, email, phone, status) VALUES (?, ?, ?, ?);`;
+      const insertQuery = `
+        INSERT INTO users (
+          username, 
+          email, 
+          password_hash, 
+          first_name, 
+          last_name, 
+          date_of_birth, 
+          profile_picture, 
+          last_login, 
+          status
+        ) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?);
+      `;
   
       // Values to insert into the query
       const values = [
-        cust_name, email, phone, status
+        username,
+        email,
+        hashedPassword,
+        first_name,
+        last_name,
+        date_of_birth,
+        profile_picture || null, // If no profile picture is provided, set as null
+        status || 'active' // Default to 'active' if not provided
       ];
     
       try {
         const result = await executeQuery(insertQuery, values);
-       return sendResponse(res, messages.SUCCESS_CODE, messages.SUCCESS_STATUS, messages.CUSTOMER_CREATED_MESSAGE, [{customerId: result.insertId}]); 
+       return sendResponse(res, messages.SUCCESS_CODE, messages.SUCCESS_STATUS, messages.USER_CREATED_MESSAGE, [{userId: result.insertId}]); 
       } catch (error) {
         handleError(res, error, messages.ERROR_CREATING_USER);
       }
     }
 
 
+
+
+    
