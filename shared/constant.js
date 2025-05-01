@@ -33,4 +33,8 @@ module.exports = {
     INVALID_REQUEST: 'Invalid request.',
     INVALID_CRED: 'Invalid credentials.',
     UNAUTHORIZED_ACCESS: 'You do not have permission to access this resource.',
+
+    // Common error message
+    COMMON_INSERT_MESSAGE: 'Record inserted successfully.',
+    COMMON_ERROR_MESSAGE: 'Something Went wrong, please try again!',
   };
