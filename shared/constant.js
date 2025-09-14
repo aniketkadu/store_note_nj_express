@@ -37,4 +37,5 @@ module.exports = {
     // Common error message
     COMMON_INSERT_MESSAGE: 'Record inserted successfully.',
     COMMON_ERROR_MESSAGE: 'Something Went wrong, please try again!',
+    COMMON_DATA_FETCH_MESSAGE: 'Details fetched successfully.',
   };

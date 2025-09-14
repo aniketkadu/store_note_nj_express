@@ -3,7 +3,40 @@ const { sendResponse } = require('../services/responseUtils');
 const messages = require('../shared/constant'); 
 
 exports.getAllCustomers = async (req,res) => {
-    const sql = "Select * from customers where status = 'active'"
+  // fetch pnly active customers who have purchases
+//     const sql = `SELECT 
+//     c.customer_id,
+//     c.name,
+//     c.email,
+//     c.phone,
+//     SUM(p.price * p.quantity) AS total_pending_amount
+//   FROM 
+//     customers c
+//   JOIN 
+//     purchases p ON c.customer_id = p.customer_id
+//   WHERE 
+//     c.status = 'active'
+//     AND p.payment_status = 'pending'
+//   GROUP BY 
+//     c.customer_id, c.name, c.email, c.phone
+// `
+
+// fetch all active customers without purchase
+ const sql = `SELECT 
+  c.customer_id,
+  c.name,
+  c.email,
+  c.phone,
+  SUM(CASE WHEN p.payment_status = 'pending' THEN p.price * p.quantity ELSE 0 END) AS total_pending_amount
+FROM 
+  customers c
+LEFT JOIN 
+  purchases p ON c.customer_id = p.customer_id
+WHERE 
+  c.status = 'active'
+GROUP BY 
+  c.customer_id, c.name, c.email, c.phone`
+
     try {
         const results = await executeQuery(sql)
         if (results.length === 0) {

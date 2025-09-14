@@ -3,16 +3,31 @@ const { sendResponse } = require("../services/responseUtils");
 const messages = require("../shared/constant");
 
 exports.getItemsByCustomer = async (req, res) => {
-  const sqlQuery = `SELECT * FROM purchases where customer_id = ? AND payment_status = ?`;
-  try {
+  let purchasesQuery = 'SELECT * FROM purchases WHERE customer_id = ?';
+let totalQuery = 'SELECT SUM(price * quantity) AS total_amount FROM purchases WHERE customer_id = ?';
+  
+try {
     const { customer_id, payment_status } = req.body;
-    const results = await executeQuery(sqlQuery, [customer_id, payment_status]);
+    const queryParams = [customer_id];
+    // Check if user wants all payment statuses
+    if (payment_status !== 'all') {
+      purchasesQuery += ' AND payment_status = ?';
+      totalQuery += ' AND payment_status = ?';
+      queryParams.push(payment_status);
+    }
+    
+    const purchases = await executeQuery(purchasesQuery, queryParams);
+    const totalResult = await executeQuery(totalQuery, queryParams);
+    const totalAmount = totalResult[0]?.total_amount || 0;
     sendResponse(
       res,
       messages.SUCCESS_CODE,
       messages.SUCCESS_STATUS,
-      messages.DATA_FETCHED_MESSAGE,
-      results
+      messages.COMMON_DATA_FETCH_MESSAGE,
+      {
+        purchases,
+        total_amount: totalAmount
+      }
     );
   } catch (error) {
     return sendResponse(
@@ -71,5 +86,44 @@ exports.createPurchase = async (req, res) => {
     );
   } catch (error) {
     handleError(res, error, messages.COMMON_ERROR_MESSAGE);
+  }
+};
+
+
+exports.markAsPaymentCompleted = async (req,res) => {
+  const { purchase_ids, customer_id, all_pending } = req.body;
+
+  try {
+    let result;
+
+    if (all_pending && customer_id) {
+      // ✅ Complete all pending purchases for a customer
+      const sql = `UPDATE purchases SET payment_status = 'completed' WHERE customer_id = ? AND payment_status = 'pending'`;
+      result = await executeQuery(sql, [customer_id]);
+    } else if (Array.isArray(purchase_ids) && purchase_ids.length > 0) {
+      // ✅ Complete specific purchases
+      const placeholders = purchase_ids.map(() => '?').join(',');
+      const sql = `UPDATE purchases SET payment_status = 'completed' WHERE purchase_id IN (${placeholders}) AND payment_status = 'pending'`;
+      result = await executeQuery(sql, purchase_ids);
+    } else {
+      return sendResponse(
+        res,
+        400,
+        false,
+        'Invalid request. Provide purchase_ids or customer_id with all_pending.',
+        null
+      );
+    }
+
+    sendResponse(
+      res,
+      200,
+      true,
+      'Purchase(s) marked as completed successfully.',
+      { affectedRows: result.affectedRows }
+    );
+  } catch (error) {
+    console.error('Error updating purchases:', error);
+    sendResponse(res, 500, false, 'Internal Server Error', null);
   }
 };
