@@ -28,7 +28,7 @@ app.get('/check-connection', async (req, res) => {
     res.json({ status: 'db success', server_time: rows[0].now });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ status: 'db error', message: err.message });
+    res.status(500).json({ status: 'db error', message: err });
   }
 });
 
