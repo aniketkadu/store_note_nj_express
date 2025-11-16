@@ -1,7 +1,7 @@
 // database.js
-const mysql2 = require('mysql2');
+const mysql2 = require('mysql2/promise');
 
-// Set up the connection pool
+//Set up the connection pool
 // const pool = mysql2.createPool({
 //   host: 'localhost',
 //   user: 'root',
@@ -10,6 +10,7 @@ const mysql2 = require('mysql2');
 //   connectionLimit: 10
 // });
 // Set up the connection pool
+
 const pool = mysql2.createPool({
    host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,

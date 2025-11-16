@@ -9,7 +9,6 @@ const customerRoute =  require('./routes/customer');
 const purchaseRoute =  require('./routes/purchase');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swagger/swagger'); // Adjust path as needed
-
 // Middleware to parse JSON request bodies
 app.use(express.json());
 app.use(cors());
@@ -19,8 +18,20 @@ app.use(cors());
 // Serve Swagger docs at /api-docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get('/',(req,res) => {
+
   res.json({message:'Welcome!'});
 })
+
+app.get('/check-connection', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT NOW() AS now');
+    res.json({ status: 'db success', server_time: rows[0].now });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: 'db error', message: err.message });
+  }
+});
+
 app.use('/users',userRoute);
 app.use('/login',loginRoute);
 app.use('/customers',customerRoute);

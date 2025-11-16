@@ -1,20 +1,14 @@
 const pool = require("../database");
 
+const executeQuery = async (sql, params) => {
+  try {
+    const [results] = await pool.execute(sql, params);
+    return results;
+  } catch (err) {
+    throw err;
+  }
+};
 
-const executeQuery = (sql, params) => {
-    return new Promise((resolve, reject) => {
-      pool.execute(sql, params, (err, results) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(results);
-        }
-      });
-    });
-  };
-
-
-  // Reusable function for handling errors
 const handleError = (res, error, customMessage) => {
   console.error(error);
   res
@@ -22,4 +16,4 @@ const handleError = (res, error, customMessage) => {
     .json({ error: customMessage || "Database error", details: error });
 };
 
-module.exports = {executeQuery,handleError}
+module.exports = { executeQuery, handleError };
