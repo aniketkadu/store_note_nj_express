@@ -15,8 +15,11 @@ const pool = mysql2.createPool({
    host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
   password: process.env.MYSQLPASSWORD,
-  database: process.env.MYSQL_DATABASE,
-  port: process.env.MYSQLPORT,
+  database: process.env.MYSQLDATABASE,
+  port: Number(process.env.MYSQLPORT),
+  ssl: {
+    rejectUnauthorized: true // required for Railway MySQL
+  }
 });
 
 // Export the pool for use in other files
