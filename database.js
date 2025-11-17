@@ -12,14 +12,12 @@ const mysql2 = require('mysql2/promise');
 // Set up the connection pool
 
 const pool = mysql2.createPool({
-   host: process.env.MYSQLHOST,
-  user: process.env.MYSQLUSER,
-  password: process.env.MYSQLPASSWORD,
-  database: process.env.MYSQLDATABASE,
-  port: Number(process.env.MYSQLPORT),
-  ssl: {
-    rejectUnauthorized: true // required for Railway MySQL
-  }
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
+  connectionLimit: 10
 });
 
 // Export the pool for use in other files
