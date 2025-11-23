@@ -9,6 +9,7 @@ const customerRoute =  require('./routes/customer');
 const purchaseRoute =  require('./routes/purchase');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swagger/swagger'); // Adjust path as needed
+const { initTables } = require('./initTable');
 // Middleware to parse JSON request bodies
 app.use(express.json());
 app.use(cors());
@@ -38,7 +39,19 @@ app.use('/customers',customerRoute);
 app.use('/purchase',purchaseRoute);
 
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// const PORT = process.env.PORT || 3001;
+// app.listen(PORT, () => {
+//   console.log(`Server is running on port ${PORT}`);
+// });
+
+// 👉 Start server + auto-create tables if not present 
+async function startServer() {
+  await initTables();   // ← CALL HERE
+  const PORT = process.env.PORT || 3001;
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
+
+
+startServer(); 
